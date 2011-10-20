@@ -33,7 +33,7 @@ namespace SL115Checker
         private List<Filer> filers = new List<Filer>();
         private string BSRPeriod = "";
         //BSRGlobal.BsrPeriodGlobal = "201107";  //This doesn't work, why not? I would rather use a stati class member than the above local variable.
-        string targetPath = @"sl115\";
+        string targetPath = "";
 
         // I don't want to create a class variable. I cannot pass it in the procedure because the time the xml file is read and the time it is
         // written can differ a lot.
@@ -73,6 +73,12 @@ namespace SL115Checker
             filers.Add(Bsr);
             filers.Add(Omega);
 
+            if (BSRGlobal.TargetPath == null)
+            {
+                NavigateTargetPath();
+                targetPath = BSRGlobal.TargetPath + @"sl115\";
+            }
+
             // populate today's date that will be used to calculate days difference
             labelToday.Text = DateTime.Today.ToShortDateString();
             checkBoxBSR.Checked = false;
@@ -80,6 +86,7 @@ namespace SL115Checker
             myXML = ReadInspectors();
             CalcBSR();
             ClearTargetDir();
+            textBoxStatus.Text += "Target Path = " + BSRGlobal.TargetPath;
         }
 
         private void comboInspector_SelectedIndexChanged(object sender, EventArgs e)
@@ -174,18 +181,9 @@ namespace SL115Checker
                 inspectors.Add(newInspector);
             }
 
-            //combobox doesn't have "add". Cannot use comboInspector.DataSource = inspectors.Name
-            List<string> inspectorsName = new List<string>();
             textBoxStatus.Clear();
-            for (int i = 0; i < inspectors.Count; i++)
-            {
-                inspectorsName.Add(inspectors[i].Name);
-            }
-            comboInspector.DataSource = inspectorsName;
-            // How do I bind the names of the inspectors list to the combobox?
-            //comboInspector.DataSource = inspectors[].Name;  // Why doesn't this work?
-            //comboInspector.DataSource = inspectors<Inspector>.name; // This doesn't work either
-
+            for (int i = 0; i < inspectors.Count; i++) { comboInspector.Items.Add(inspectors[i].Name); }
+            comboInspector.SelectedIndex = 0;  // I get a -1 SelectedIndex if I don't do this?
             return doc;
         
         } //ReadInspectors
@@ -265,11 +263,11 @@ namespace SL115Checker
         // add the branch number and extension to path stubs
         public void CreatePaths()
         {
-            Asset.FullPath = Asset.Stub + Branch.Number + ".csv";
-            Book.FullPath = Book.Stub + Branch.Number + ".csv";
-            Fin.FullPath = Fin.Stub + Branch.Number + ".csv";
-            Bsr.FullPath = Bsr.Stub + BSRPeriod + ".csv";
-            Omega.FullPath = Omega.Stub + Branch.Number + ".csv";
+            Asset.FullPath = BSRGlobal.TargetPath + Asset.Stub + Branch.Number + ".csv";
+            Book.FullPath = BSRGlobal.TargetPath + Book.Stub + Branch.Number + ".csv";
+            Fin.FullPath = BSRGlobal.TargetPath + Fin.Stub + Branch.Number + ".csv";
+            Bsr.FullPath = BSRGlobal.TargetPath + Bsr.Stub + BSRPeriod + ".csv";
+            Omega.FullPath = BSRGlobal.TargetPath + Omega.Stub + Branch.Number + ".csv";
                         
             //textBoxStatus.Clear();
             //for (int i = 0; i < filers.Count; i++) { textBoxStatus.Text += filers[i].FullPath + "\r\n"; }
@@ -610,6 +608,27 @@ namespace SL115Checker
             btnCheck.Focus();
             tbBranch.Clear();
             tbBranch.Focus();
+        }
+
+        private void btnNavigateTarget_Click(object sender, EventArgs e)
+        {
+            NavigateTargetPath();
+        }
+
+        private void NavigateTargetPath()
+        {
+            // navigate to the target path and set the static member
+            folderBrowserDialog1.ShowNewFolderButton = false;
+            DialogResult result = folderBrowserDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                BSRGlobal.TargetPath = folderBrowserDialog1.SelectedPath + @"\";
+                textBoxStatus.Text += "The target path selected is: " + BSRGlobal.TargetPath + (char)13 + (char)10;
+            }
+            else
+            {
+                textBoxStatus.Text += "Please select a valid target path" + (char)13 + (char)10;
+            }
         }
 
         

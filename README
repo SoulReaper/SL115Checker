@@ -1,0 +1,42 @@
+sl115checker README
+-------------------
+
+Purpose of program
+------------------
+I generate files for according to agency number. Files are ftp to network drives. Files are overwritten each time it is generated for the same agency.
+I have to email the files. Everytime I have to check the file modify date to see if the file I generated just now has been copied over. Then I have to copy each type of file to a common attachment folder for easy attachement.
+
+I made the helper app to show the file dates and then copy the files to the "target" folder.
+The target folder is cleaned when the app is run as I don't want to copy a previous batch's files.
+
+Overview of data
+----------------
+Data files copied:
+Assets, filename = bates\bate<agency number>.csv
+Books, filename = boekevoorraad\boek<agency number>.csv
+Financial statements, filename = workfiles\FOP320-<agency number>.csv
+Omega assets, filename = voorraad\ovba_<agency number>.csv
+Bsr (sales targets), filename = workfiles\bsr210<period YYYYMM>.csv
+Target folder = sl115
+
+Certain files are copied based on the agency type:
+Funeral: copy only assets and financials.
+Life: copy only assets and books.
+Omega copy only omega assets (ovba).
+
+Bsr can be copied at any time, needed only once per period. This is independent from the other files and the agency type.
+
+Config file
+-----------
+A config file is used in xml format that is read when the form loads.
+The config file stores the inspector name as well as the period of the bsr file that was last copied to each specific inspector. The reason is that the bsr file is copied to each inspector once a month dpending on which period is applicable.
+So if the bsr file was copied already once does not have to copy it again.
+
+BSR period
+----------
+The month closure does not occur at a specific date every month. This makes it difficult to include the very latest bsr file. Thus the bsr file of 2 months in the past is used. This ensures that the latest definitely closed off period is used. Thus the bsr file will always contain data, and is not empty in the case of a non-closed off period.
+
+Inspectors
+----------
+The team of inspectors are set up in the config file.
+It tracks which BSR period was copied to whom so that you don't copy it repeatedly.

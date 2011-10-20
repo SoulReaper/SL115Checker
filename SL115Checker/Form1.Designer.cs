@@ -75,6 +75,8 @@
             this.checkBoxBSR = new System.Windows.Forms.CheckBox();
             this.label36 = new System.Windows.Forms.Label();
             this.labelCurrentBSR = new System.Windows.Forms.Label();
+            this.btnNavigateTarget = new System.Windows.Forms.Button();
+            this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.groupBoxFiles.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -139,7 +141,7 @@
             this.textBoxStatus.Multiline = true;
             this.textBoxStatus.Name = "textBoxStatus";
             this.textBoxStatus.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBoxStatus.Size = new System.Drawing.Size(373, 187);
+            this.textBoxStatus.Size = new System.Drawing.Size(604, 187);
             this.textBoxStatus.TabIndex = 8;
             this.textBoxStatus.TabStop = false;
             // 
@@ -535,6 +537,16 @@
             this.labelCurrentBSR.TabIndex = 23;
             this.labelCurrentBSR.Text = "Current BSR";
             // 
+            // btnNavigateTarget
+            // 
+            this.btnNavigateTarget.Location = new System.Drawing.Point(462, 214);
+            this.btnNavigateTarget.Name = "btnNavigateTarget";
+            this.btnNavigateTarget.Size = new System.Drawing.Size(146, 23);
+            this.btnNavigateTarget.TabIndex = 24;
+            this.btnNavigateTarget.Text = "Set a new target path";
+            this.btnNavigateTarget.UseVisualStyleBackColor = true;
+            this.btnNavigateTarget.Click += new System.EventHandler(this.btnNavigateTarget_Click);
+            // 
             // Form1
             // 
             this.AcceptButton = this.btnCheck;
@@ -542,6 +554,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnExit;
             this.ClientSize = new System.Drawing.Size(636, 524);
+            this.Controls.Add(this.btnNavigateTarget);
             this.Controls.Add(this.labelCurrentBSR);
             this.Controls.Add(this.label36);
             this.Controls.Add(this.checkBoxBSR);
@@ -621,6 +634,8 @@
         private System.Windows.Forms.CheckBox checkBoxBSR;
         private System.Windows.Forms.Label label36;
         private System.Windows.Forms.Label labelCurrentBSR;
+        private System.Windows.Forms.Button btnNavigateTarget;
+        private System.Windows.Forms.FolderBrowserDialog folderBrowserDialog1;
     }
 }
 

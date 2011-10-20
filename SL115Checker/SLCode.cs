@@ -4,6 +4,10 @@
 //using System.Text;
 
 // TODO
+//Use fileopendialog to browse to the target dir because I cannot run the program from within the target
+// dir. So run it from c: and work with the files and folders on the network drive.
+// Save the target dir in the XML file so that you don't have to navigate everytime you run the app.
+// The target path will also be a static.
 
 namespace SLCode
 {
@@ -15,16 +19,26 @@ namespace SLCode
     static class BSRGlobal
     {
         private static Period m_bsrPeriodGlobal;
+        private static string m_TargetPath;   // where the folders and files are on the network drive
 
         public static Period BsrPeriodGlobal
         {
             get { return m_bsrPeriodGlobal; }
             set { m_bsrPeriodGlobal = value; } 
         }
+
+        public static string TargetPath
+        {
+            get { return m_TargetPath; }
+            set { m_TargetPath = value; }
+        }
     }
     
     public class Inspector
     {
+
+        public static Period BsrStatic;  // try this to do away with the static class
+        
         private string m_name;
         private Period m_bsrPeriodInspector;
         
