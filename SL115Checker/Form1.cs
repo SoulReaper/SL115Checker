@@ -32,7 +32,8 @@ namespace SL115Checker
         // the list is to populate the combobox. I don't know how to do it with List<inspectors> and referencing the names
         private List<Inspector> inspectors = new List<Inspector>();
         private List<Filer> filers = new List<Filer>();
-        private string BSRPeriod = "";
+        BSRGlobal myBSRGlobal = new BSRGlobal();
+
         
         // I don't want to create a class variable. I cannot pass it in the procedure because the time the xml file is read and the time it is
         // written can differ a lot.
@@ -72,34 +73,37 @@ namespace SL115Checker
             filers.Add(Bsr);
             filers.Add(Omega);
 
+            labelCurrentBSR.Text = myBSRGlobal.BSRPeriodAvailable.ToString();
+            // determine if checkbox should be checked, is the inspector bsr the available bsr?
+            if (myBSRGlobal.BSRPeriodAvailable.Year > inspectors[comboInspector.SelectedIndex].BSRperiod.Year) { checkBoxBSR.Checked = true; }
+            else if (myBSRGlobal.BSRPeriodAvailable.Month > inspectors[comboInspector.SelectedIndex].BSRperiod.Month) { checkBoxBSR.Checked = true; }
+            else { checkBoxBSR.Checked = false; }
 
             myXML = ReadInspectors();
             
-            // this is executed always as the xml file is not loaded and the saved path read, first try to load the file and read the path. If it is null then do the following
-            if (BSRGlobal.WorkingDir == null)
+            // load config file, read working dir, navigate if not saved
+            if (myBSRGlobal.WorkingDir == null)
             {
                 if (myXML.Element("sl115").Element("workingdir").Element("workingdirstring").Value != "")
-                { BSRGlobal.WorkingDir = myXML.Element("sl115").Element("workingdir").Element("workingdirstring").Value; }
+                { myBSRGlobal.WorkingDir = myXML.Element("sl115").Element("workingdir").Element("workingdirstring").Value; }
                 else { NavigateTargetPath(); } // this references myXML before ReadInspectors thus before myXML is created 
             }
 
-            BSRGlobal.TargetPath = BSRGlobal.WorkingDir + @"sl115\";
+            myBSRGlobal.TargetPath = myBSRGlobal.WorkingDir + @"sl115\";
         
             // populate today's date that will be used to calculate days difference
             labelToday.Text = DateTime.Today.ToShortDateString();
             checkBoxBSR.Checked = false;
             InitialState();
             
-            CalcBSR();
             ClearTargetDir();
-            textBoxStatus.Text += "Target Path = " + BSRGlobal.TargetPath + (char)13 + (char)10;
-            textBoxStatus.Text += "Working Dir = " + BSRGlobal.WorkingDir + (char)13 + (char)10;
+            textBoxStatus.Text += "Target Path = " + myBSRGlobal.TargetPath + (char)13 + (char)10;
+            textBoxStatus.Text += "Working Dir = " + myBSRGlobal.WorkingDir + (char)13 + (char)10;
         }
 
         private void comboInspector_SelectedIndexChanged(object sender, EventArgs e)
         {
             labelBSRPrevious.Text = inspectors[comboInspector.SelectedIndex].BSRperiod.ToString();
-            CalcBSR();
         }
 
         private void buttonExit_Click(object sender, EventArgs e)
@@ -197,47 +201,6 @@ namespace SL115Checker
         
         } //ReadInspectors
 
-        // this should be in the class, to be implemented 
-        // calculate which BSR should be sent: current date (month) - 2
-        public void CalcBSR()
-        {
-            int yearNow = 0; // today
-            int monthNow = 0; // today
-            int yearBSR = 0; // inspector 
-            int monthBSR = 0; // inspector
-            int yearAvailable = 0; // latest BSR that can be used safely
-            int monthAvailable = 0; // latest BSR that can be used safely
-
-            yearNow = DateTime.Today.Year;
-            monthNow = DateTime.Today.Month;
-            yearBSR = inspectors[comboInspector.SelectedIndex].BSRperiod.Year;
-            monthBSR = inspectors[comboInspector.SelectedIndex].BSRperiod.Month;
-
-            // going back 2 months will fall into the previous year, thus now = Jan/Feb
-            if (monthNow <= 2)
-            {
-                yearAvailable = yearNow - 1;
-                monthAvailable = monthNow + 10; // october + current month = correct month in the previous year eg. 201101 - 2 = 201011
-            }
-            else // stay in the same year, just move back 2 months
-            {
-                yearAvailable = yearNow;
-                monthAvailable = monthNow - 2;
-            }
-
-            
-            // format BSRPeriod to show the month as 2 digits
-            if (monthAvailable > 9) { BSRPeriod = yearAvailable.ToString() + monthAvailable.ToString(); }
-            else { BSRPeriod = yearAvailable.ToString() + "0" + monthAvailable.ToString(); }
-
-            labelCurrentBSR.Text = BSRPeriod;
-
-            // determine if checkbox should be checked, is the inspector bsr the available bsr?
-            if (yearAvailable > yearBSR) { checkBoxBSR.Checked = true; }
-            else if (monthAvailable > monthBSR) { checkBoxBSR.Checked = true; }
-            else { checkBoxBSR.Checked = false; }
-        }
-
         // reset control values 
         public void ClearControls()
         {
@@ -272,11 +235,11 @@ namespace SL115Checker
         // add the branch number and extension to path stubs
         public void CreatePaths()
         {
-            Asset.FullPath = BSRGlobal.WorkingDir + Asset.Stub + Branch.Number + ".csv";
-            Book.FullPath = BSRGlobal.WorkingDir + Book.Stub + Branch.Number + ".csv";
-            Fin.FullPath = BSRGlobal.WorkingDir + Fin.Stub + Branch.Number + ".csv";
-            Bsr.FullPath = BSRGlobal.WorkingDir + Bsr.Stub + BSRPeriod + ".csv";
-            Omega.FullPath = BSRGlobal.WorkingDir + Omega.Stub + Branch.Number + ".csv";
+            Asset.FullPath = myBSRGlobal.WorkingDir + Asset.Stub + Branch.Number + ".csv";
+            Book.FullPath = myBSRGlobal.WorkingDir + Book.Stub + Branch.Number + ".csv";
+            Fin.FullPath = myBSRGlobal.WorkingDir + Fin.Stub + Branch.Number + ".csv";
+            Bsr.FullPath = myBSRGlobal.WorkingDir + Bsr.Stub + myBSRGlobal.BSRPeriodAvailable.ToString() + ".csv";
+            Omega.FullPath = myBSRGlobal.WorkingDir + Omega.Stub + Branch.Number + ".csv";
                         
             //textBoxStatus.Clear();
             //for (int i = 0; i < filers.Count; i++) { textBoxStatus.Text += filers[i].FullPath + "\r\n"; }
@@ -369,7 +332,7 @@ namespace SL115Checker
             // clear the target directory
             try
             {
-                string[] targetFiles = Directory.GetFiles(BSRGlobal.TargetPath, "*.*");
+                string[] targetFiles = Directory.GetFiles(myBSRGlobal.TargetPath, "*.*");
                 foreach (string targetFile in targetFiles)
                 {
                     //      textBoxStatus.Text += "File: " + targetFile + (char)13 + (char)10;
@@ -378,7 +341,7 @@ namespace SL115Checker
             }
             catch (Exception ex)
             {
-                textBoxStatus.Text += "Error deleting files in target directory " + BSRGlobal.TargetPath + " : " + ex.Message + (char)13 + (char)10;
+                textBoxStatus.Text += "Error deleting files in target directory " + myBSRGlobal.TargetPath + " : " + ex.Message + (char)13 + (char)10;
             }
         }
 
@@ -392,41 +355,41 @@ namespace SL115Checker
                 // copy files based on branch type
                 if (comboBranch.Text == "Funeral")
                 {
-                    File.Copy(Asset.FullPath, BSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath), true);
+                    File.Copy(Asset.FullPath, myBSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath), true);
                     lblAssetCopied.Text = "Yes";
-                    File.Copy(Fin.FullPath, BSRGlobal.TargetPath + Path.GetFileName(Fin.FullPath), true);
+                    File.Copy(Fin.FullPath, myBSRGlobal.TargetPath + Path.GetFileName(Fin.FullPath), true);
                     lblFinCopied.Text = "Yes";
-                    textBoxStatus.Text += "Assets were copied to " + BSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath) + (char)13 + (char)10;
-                    textBoxStatus.Text += "Financials were copied to " + BSRGlobal.TargetPath + Path.GetFileName(Fin.FullPath) + (char)13 + (char)10;
+                    textBoxStatus.Text += "Assets were copied to " + myBSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath) + (char)13 + (char)10;
+                    textBoxStatus.Text += "Financials were copied to " + myBSRGlobal.TargetPath + Path.GetFileName(Fin.FullPath) + (char)13 + (char)10;
                 }
                 if (comboBranch.Text == "Life")
                 {
-                    File.Copy(Asset.FullPath, BSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath), true);
+                    File.Copy(Asset.FullPath, myBSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath), true);
                     lblAssetCopied.Text = "Yes";
-                    File.Copy(Book.FullPath, BSRGlobal.TargetPath + Path.GetFileName(Book.FullPath), true);
+                    File.Copy(Book.FullPath, myBSRGlobal.TargetPath + Path.GetFileName(Book.FullPath), true);
                     lblBookCopied.Text = "Yes";
-                    textBoxStatus.Text += "Assets were copied to " + BSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath) + (char)13 + (char)10;
-                    textBoxStatus.Text += "Books were copied to " + BSRGlobal.TargetPath + Path.GetFileName(Book.FullPath) + (char)13 + (char)10;
+                    textBoxStatus.Text += "Assets were copied to " + myBSRGlobal.TargetPath + Path.GetFileName(Asset.FullPath) + (char)13 + (char)10;
+                    textBoxStatus.Text += "Books were copied to " + myBSRGlobal.TargetPath + Path.GetFileName(Book.FullPath) + (char)13 + (char)10;
                 }
                 if (comboBranch.Text == "Omega")
                 {
-                    File.Copy(Omega.FullPath, BSRGlobal.TargetPath + Path.GetFileName(Omega.FullPath), true);
+                    File.Copy(Omega.FullPath, myBSRGlobal.TargetPath + Path.GetFileName(Omega.FullPath), true);
                     lblOmegaCopied.Text = "Yes";
-                    textBoxStatus.Text += "Omega assets were copied to " + BSRGlobal.TargetPath + Path.GetFileName(Omega.FullPath) + (char)13 + (char)10;
+                    textBoxStatus.Text += "Omega assets were copied to " + myBSRGlobal.TargetPath + Path.GetFileName(Omega.FullPath) + (char)13 + (char)10;
                 }
                 if (checkBoxBSR.Checked)
                 {
-                    File.Copy(Bsr.FullPath, BSRGlobal.TargetPath + Path.GetFileName(Bsr.FullPath), true);
+                    File.Copy(Bsr.FullPath, myBSRGlobal.TargetPath + Path.GetFileName(Bsr.FullPath), true);
                     lblBSRCopied.Text = "Yes";
                     //textBoxStatus.Text += "Inspector: " + comboInspector.SelectedItem + " BSR Period: " + BSRPeriod + (char)13 + (char)10;
-                    textBoxStatus.Text += "BSR was copied to " + BSRGlobal.TargetPath + Path.GetFileName(Bsr.FullPath) + (char)13 + (char)10;
+                    textBoxStatus.Text += "BSR was copied to " + myBSRGlobal.TargetPath + Path.GetFileName(Bsr.FullPath) + (char)13 + (char)10;
 
                     foreach (XElement element in myXML.Element("sl115").Elements("controlinspector"))
                     {
                         // find the correct inspector
                         if (element.Element("name").Value.ToString() == comboInspector.SelectedValue.ToString())
                         {
-                            element.Element("period").Value = BSRPeriod;
+                            element.Element("period").Value = myBSRGlobal.BSRPeriodAvailable.ToString();
                             //textBoxStatus.Text += "Element value: " + element.Element("name").Value.ToString() + " will have a new Period of "
                             //    + element.Element("period").Value.ToString();
                             try { myXML.Save(xmlFile); }
@@ -631,8 +594,8 @@ namespace SL115Checker
             DialogResult result = folderBrowserDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                BSRGlobal.WorkingDir = folderBrowserDialog1.SelectedPath + @"\";
-                textBoxStatus.Text += "The working dir selected is: " + BSRGlobal.WorkingDir + (char)13 + (char)10;
+                myBSRGlobal.WorkingDir = folderBrowserDialog1.SelectedPath + @"\";
+                textBoxStatus.Text += "The working dir selected is: " + myBSRGlobal.WorkingDir + (char)13 + (char)10;
 
                 // This does not execute correctly, cause combo to be not populated
                 SaveWorkingDir();
@@ -646,7 +609,7 @@ namespace SL115Checker
         // find the path element, replace it, save file
         public void SaveWorkingDir()
         {
-            try { myXML.Element("sl115").Element("workingdir").Element("workingdirstring").Value = BSRGlobal.WorkingDir; }
+            try { myXML.Element("sl115").Element("workingdir").Element("workingdirstring").Value = myBSRGlobal.WorkingDir; }
             catch (NullReferenceException ex) { textBoxStatus.Text += "Null reference to myXML caught: " + ex.Message; }  // do nothing, do it next time around after object is created and button is clicked
             
             try { myXML.Save(xmlFile); } 

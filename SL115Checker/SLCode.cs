@@ -4,51 +4,75 @@
 //using System.Text;
 
 // TODO
-//Use fileopendialog to browse to the target dir because I cannot run the program from within the target
-// dir. So run it from c: and work with the files and folders on the network drive.
-// Save the target dir in the XML file so that you don't have to navigate everytime you run the app.
-// The target path will also be a static.
 
 namespace SLCode
 {
-    // This static class doesn't work. I cannot assign a value to BsrPeriodGlobal. Why not?
-    // This is the BSR period to be used by all the Inspector objects. Therefore there should be only one shared by all the objects.
-    // Alternate solution: use a string local form variable.
-    // Alternate solution2: every object has its own global bsr period that is calculated for each object. This is a waste as it will always be
-    // the same period for all the objects.
-    static class BSRGlobal
+    // Handles properties that is global to the app and shared by all other objects. Tried using a static class but this works better as more protection.
+    public class BSRGlobal
     {
-        private static Period m_bsrPeriodGlobal;
-        private static string m_TargetPath;   // where the files are copied to for attachment
-        private static string m_WorkingDir;   // where the folders and files are on the network drive
+        private Period m_bsrPeriodAvailable = new Period(); // the latest bsr that can be safely distributed
+        private string m_TargetPath;   // where the files are copied to for attachment
+        private string m_WorkingDir;   // where the folders and files are on the network drive
 
-        public static Period BsrPeriodGlobal
+        public BSRGlobal()
         {
-            get { return m_bsrPeriodGlobal; }
-            set { m_bsrPeriodGlobal = value; } 
+            this.CalcBSRAvailable();  // needs to be calculated once every time the app runs, unless the app runs accross 23:59 at the end of the month. Not testing for this.
         }
 
-        public static string TargetPath
+        public string TargetPath
         {
             get { return m_TargetPath; }
             set { m_TargetPath = value; }
         }
 
-        public static string WorkingDir
+        public string WorkingDir
         {
             get { return m_WorkingDir; }
             set { m_WorkingDir = value; }
         }
-    }
-    
+
+        // The latest BSR that can be safely distributed = current month - 2
+        // month end closing usually around 20th of next month, to be sure report has valid data go back 2 months
+        // Stands separate from Inspectors as 1 period applies to all Inspectors
+        public Period BSRPeriodAvailable
+        {
+            get { return m_bsrPeriodAvailable; }
+        }
+
+        private void CalcBSRAvailable()
+        {
+            int yearNow = 0; // today
+            int monthNow = 0; // today
+            int yearAvailable = 0; // latest BSR that can be used safely
+            int monthAvailable = 0; // latest BSR that can be used safely
+
+            yearNow = DateTime.Today.Year;
+            monthNow = DateTime.Today.Month;
+
+            // going back 2 months will fall into the previous year, thus now = Jan/Feb
+            if (monthNow <= 2)
+            {
+                yearAvailable = yearNow - 1;
+                monthAvailable = monthNow + 10; // october + current month = correct month in the previous year eg. 201101 - 2 = 201011
+            }
+            else // stay in the same year, just move back 2 months
+            {
+                yearAvailable = yearNow;
+                monthAvailable = monthNow - 2;
+            }
+
+            m_bsrPeriodAvailable.Year = yearAvailable;
+            m_bsrPeriodAvailable.Month = monthAvailable;
+        }
+    } // class
+
     public class Inspector
     {
-
         public static Period BsrStatic;  // try this to do away with the static class
         
         private string m_name;
         private Period m_bsrPeriodInspector;
-        
+
         public string Name 
         {
             get { return m_name; }
@@ -61,6 +85,7 @@ namespace SLCode
             get { return m_bsrPeriodInspector; }
             set { m_bsrPeriodInspector = value; } 
         }
+
     } // class Inspector
 
     // holds the path and filename info, also creates the full path string
@@ -163,7 +188,7 @@ namespace SLCode
                 if (Inted == true) // string converted to uint
                 {
                     if (IntCode < 10000 && IntCode > 0) { } // value was already assigned to _intCode with TryParse
-                    else { IntCode = 0; } // not 0 - 9999, invalid thus assign error code
+                    else { IntCode = 0; } // not 1 - 9999, invalid thus assign error code
                 }
                 else { IntCode = 0; } // int cannot be null, so use 0 as there is no branch number 0
                 
@@ -186,7 +211,6 @@ namespace SLCode
             }
             else { return false; } // could not convert to uint, invalid
         }
-        
     } // class Branch
     
 } // namespace
