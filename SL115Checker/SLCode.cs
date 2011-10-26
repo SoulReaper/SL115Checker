@@ -19,7 +19,8 @@ namespace SLCode
     static class BSRGlobal
     {
         private static Period m_bsrPeriodGlobal;
-        private static string m_TargetPath;   // where the folders and files are on the network drive
+        private static string m_TargetPath;   // where the files are copied to for attachment
+        private static string m_WorkingDir;   // where the folders and files are on the network drive
 
         public static Period BsrPeriodGlobal
         {
@@ -31,6 +32,12 @@ namespace SLCode
         {
             get { return m_TargetPath; }
             set { m_TargetPath = value; }
+        }
+
+        public static string WorkingDir
+        {
+            get { return m_WorkingDir; }
+            set { m_WorkingDir = value; }
         }
     }
     
