@@ -9,21 +9,7 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Linq;
 using System.IO;
-using SLCode;
-
-// TODO
-// More objects, too many class variables.
-// BSRPeriod static member of Period class. Accessible by all Period objects, calculated once.
-// Status flag to regulate which controls are enabled/disabled 
-// Move business code out of UI file
-
-//PROBLEMS
-//combo cannot use list of objects as datasource to list the names eg. DataSource = inspectors.Name
-// so I use a seperate string list for just the names in order to populate the combobox
-// Is there a way to populate the combobox using the list of inspectors(name,BSRperiod)?
-
-// NOTES
-
+using SL115Lib;
  
 namespace SL115Checker
 {
@@ -33,7 +19,6 @@ namespace SL115Checker
         private List<Inspector> inspectors = new List<Inspector>();
         private List<Filer> filers = new List<Filer>();
         BSRGlobal myBSRGlobal = new BSRGlobal();
-
         
         // I don't want to create a class variable. I cannot pass it in the procedure because the time the xml file is read and the time it is
         // written can differ a lot.

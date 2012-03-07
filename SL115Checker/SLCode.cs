@@ -5,7 +5,7 @@
 
 // TODO
 
-namespace SLCode
+namespace SL115Checker
 {
     // Handles properties that is global to the app and shared by all other objects. Tried using a static class but this works better as more protection.
     public class BSRGlobal
@@ -65,28 +65,7 @@ namespace SLCode
             m_bsrPeriodAvailable.Month = monthAvailable;
         }
     } // class
-
-    public class Inspector
-    {
-        public static Period BsrStatic;  // try this to do away with the static class
-        
-        private string m_name;
-        private Period m_bsrPeriodInspector;
-
-        public string Name 
-        {
-            get { return m_name; }
-            set { m_name = value; } 
-        }
-        
-        // the bsr that was last provided to the inspector
-        public Period BSRperiod 
-        {
-            get { return m_bsrPeriodInspector; }
-            set { m_bsrPeriodInspector = value; } 
-        }
-
-    } // class Inspector
+    
 
     // holds the path and filename info, also creates the full path string
     public class Filer
@@ -110,64 +89,7 @@ namespace SLCode
         }
 
     } // class Filer
-
-    // year month
-    public class Period
-    {
-        private int m_year;
-        private int m_month;
-
-        public int Year
-        {
-            get { return m_year; }
-            set { m_year = value; }
-        }
-
-        public int Month
-        {
-            get { return m_month; }
-            set // keep month 1 - 12
-            {
-                if (value > 12) m_month = 12;
-                else if (value < 1) m_month = 1;
-                else m_month = value;
-            }
-        }
-                
-        // month should always be 2 digits, add a leading 0 where applicable eg. 201105
-        override public string ToString()
-        {
-            if (m_month < 10) return m_year.ToString() + "0" + m_month.ToString();
-            else return m_year.ToString() + m_month.ToString();
-        }
-
-        public Period(string period)
-        {
-            if (period.Length != 6) {  } // do nothing, period must be YYYYMM
-            else
-            {
-                Boolean YearHasParsed = false;
-                Boolean MonthHasParsed = false;
-                string YearTemp = period.Substring(0, 4);  // extract year
-                string MonthTemp = period.Substring(4, 2);  // extract month
-                YearHasParsed = Int32.TryParse(YearTemp, out m_year);
-                MonthHasParsed = Int32.TryParse(MonthTemp, out m_month);
-                if (MonthHasParsed == false || YearHasParsed == false) // error with parse, do default values
-                {
-                    m_year = 1100;
-                    m_month = 1;
-                }
-                // No else statement as it is already handled by TryParse
-            }
-        }
-
-        public Period() 
-        {
-            m_year = 1100;
-            m_month = 1;
-        }
-
-    } // class Period
+       
 
     public class BranchCode
     {
