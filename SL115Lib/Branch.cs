@@ -3,6 +3,7 @@
 // TODO
 // InValid(string) does more than one thing. Get a method to convert and one to check if valid.
 // Convert and IsValid duplicate code.
+//
 
 namespace SL115Lib
 {
